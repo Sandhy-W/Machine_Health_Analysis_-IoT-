@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Predictive Maintenance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
+</head>
+<body>
+    <h1>Live Predictive Maintenance Monitoring</h1>
+
+    <h2>Current Readings</h2>
+    <p>Temperature: <span id="currentTemp">Loading...</span> °C</p>
+    <p>Vibration: <span id="currentVib">Loading...</span> Hz</p>
+
+    <h2>Temperature Anomalies (>25°C)</h2>
+    <canvas id="temperatureChart" width="600" height="200"></canvas>
+
+    <h2>Vibration Anomalies (<1Hz)</h2>
+    <canvas id="vibrationChart" width="600" height="200"></canvas>
+
+    <script>
+    var tempCtx = document.getElementById('temperatureChart').getContext('2d');
+    var vibCtx = document.getElementById('vibrationChart').getContext('2d');
+
+    var tempChart = new Chart(tempCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Temperature (°C)',
+                pointRadius: 3,
+                pointBackgroundColor: [],
+                data: []
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'category',
+                    title: { display: true, text: 'Time' },
+                    ticks: { autoSkip: true, maxTicksLimit: 20 }
+                },
+                y: {
+                    title: { display: true, text: 'Temperature (°C)' },
+                    suggestedMin: 20,
+                    suggestedMax: 30
+                }
+            },
+            plugins: {
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 25,
+                            yMax: 25,
+                            borderColor: 'red',
+                            borderWidth: 2,
+                            label: {
+                                content: 'Threshold 25°C',
+                                enabled: true,
+                                backgroundColor: 'red'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    var vibChart = new Chart(vibCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Vibration (Hz)',
+                pointRadius: 3,
+                pointBackgroundColor: [],
+                data: []
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'category',
+                    title: { display: true, text: 'Time' },
+                    ticks: { autoSkip: true, maxTicksLimit: 20 }
+                },
+                y: {
+                    title: { display: true, text: 'Vibration (Hz)' },
+                    suggestedMin: 0,
+                    suggestedMax: 3
+                }
+            },
+            plugins: {
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            yMin: 1,
+                            yMax: 1,
+                            borderColor: 'red',
+                            borderWidth: 2,
+                            label: {
+                                content: 'Threshold 1Hz',
+                                enabled: true,
+                                backgroundColor: 'red'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    function fetchData() {
+        fetch('/live-data')
+            .then(response => response.json())
+            .then(data => {
+                tempChart.data.labels = data.temp_timestamps;
+                tempChart.data.datasets[0].data = [];
+                tempChart.data.datasets[0].pointBackgroundColor = [];
+
+                vibChart.data.labels = data.vib_timestamps;
+                vibChart.data.datasets[0].data = [];
+                vibChart.data.datasets[0].pointBackgroundColor = [];
+
+                // Temperature points
+                for (let i = 0; i < data.temperature.length; i++) {
+                    if (data.temperature[i] > 25) {
+                        tempChart.data.datasets[0].data.push({x: data.temp_timestamps[i], y: data.temperature[i]});
+                        tempChart.data.datasets[0].pointBackgroundColor.push('darkorange');
+                    }
+                }
+
+                // Vibration points
+                for (let i = 0; i < data.vibration.length; i++) {
+                    if (data.vibration[i] < 1) {
+                        vibChart.data.datasets[0].data.push({x: data.vib_timestamps[i], y: data.vibration[i]});
+                        vibChart.data.datasets[0].pointBackgroundColor.push('darkorange');
+                    }
+                }
+
+                tempChart.update();
+                vibChart.update();
+            });
+
+        // Fetch latest single value
+        fetch('/latest')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('currentTemp').innerText = data.temperature.toFixed(2);
+                document.getElementById('currentVib').innerText = data.vibration.toFixed(2);
+            });
+    }
+
+    setInterval(fetchData, 2000);  // Update every 2 seconds
+    </script>
+</body>
+</html>
