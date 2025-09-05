@@ -20,8 +20,14 @@ TEMP_DB = os.path.join(base_folder, "temperature_data.db")
 VIB_DB = os.path.join(base_folder, "vibration_data.db")
 
 # --- AWS IoT MQTT Setup ---
+#AWS_ENDPOINT = "awq9r6zn9ccrm-ats.iot.us-east-1.amazonaws.com"
+#CERT_PATH = "/var/www/html/"
+#CA_CERT = os.path.join(CERT_PATH, "RootCA1.pem")
+#CERT_FILE = os.path.join(CERT_PATH, "certificate.pem.crt")
+#EY_FILE = os.path.join(CERT_PATH, "private.pem.key")
+
 AWS_ENDPOINT = "awq9r6zn9ccrm-ats.iot.us-east-1.amazonaws.com"
-CERT_PATH = "/var/www/html/"
+CERT_PATH = "/Users/kakaell/Desktop/Sandhy Document/ICC Intership/Programming/Machine_Health_Analysis_-IoT-/"
 CA_CERT = os.path.join(CERT_PATH, "RootCA1.pem")
 CERT_FILE = os.path.join(CERT_PATH, "certificate.pem.crt")
 KEY_FILE = os.path.join(CERT_PATH, "private.pem.key")
